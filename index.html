@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Query Store and Persistent Identifier Prototype : The SCAPE query store">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Query Store and Persistent Identifier Prototype</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/stefanproell/SCAPE-QueryStore">View on GitHub</a>
+
+          <h1 id="project_title">Query Store and Persistent Identifier Prototype</h1>
+          <h2 id="project_tagline">The SCAPE query store</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/stefanproell/SCAPE-QueryStore/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/stefanproell/SCAPE-QueryStore/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="querystore-and-persistent-identification-modules" class="anchor" href="#querystore-and-persistent-identification-modules"><span class="octicon octicon-link"></span></a>QueryStore and Persistent Identification Modules</h1>
+
+<p>This project provides two modules: the QueryStore and the Persistent Identification mockup service. Both components
+have been developed within the <a href="http://www.scape-project.eu/">SCAPE project</a> in order to facilityte data citation
+capabilities for existing applications. This project provides prototypes for a query store and a identification
+service used by such a service.</p>
+
+<h2>
+<a name="background-data-citation" class="anchor" href="#background-data-citation"><span class="octicon octicon-link"></span></a>Background: Data Citation</h2>
+
+<p>Sharing research data is becoming increasingly important as it enables peers to validate and reproduce data driven experiments.
+As researchers work with different data sets and highly specific individual subsets, the knowledge how subsets have
+been created is worth preserving. The most common way of creating a subset of a potentially large data set is to
+make a selection based on filtering out those records which are not needed and only include data which fulfils a
+given criteria.</p>
+
+<h2>
+<a name="enter-the-querystore" class="anchor" href="#enter-the-querystore"><span class="octicon octicon-link"></span></a>Enter the QueryStore</h2>
+
+<p>The generic approach to perform such filter operations is to use either use a query language which allows to describe
+which data to be included and which records should be omitted. SQL is such a general purpose query language. For
+end users, interfaces exist which can hide the complexity of query languages by providing forms where users can
+make their selections visually or by entering appropriate values. The QueryStore stored these queries (thus the name)
+and makes them available for later reuse. Whenever a reseacher uses a query (via an interface) in order to create a
+subset, the parameters, their order and the sortings applied can be stored. Based on temporal metadata which is
+collected automatically, the query can be re-executed.</p>
+
+<h3>
+<a name="query-store-features" class="anchor" href="#query-store-features"><span class="octicon octicon-link"></span></a>Query Store Features:</h3>
+
+<p>The Query store is implemented in Java and provides an API for the most common Tasks. It uses Hibernate to store the
+entities (details below).</p>
+
+<ul>
+<li>Create new queries</li>
+<li>Add metadata about users</li>
+<li>Add descriptive text</li>
+<li>Attach the persistent identifier of the data source (details below)</li>
+<li>Generate a persistent identifier for the query itself (details below)</li>
+<li>Append a hash of the result set</li>
+<li>Calculate a hash of the query to detect duplicate queries</li>
+<li>Add arbitrary filters in a key value fashion (e.g. 'instrumentName';'tempreatureSensor'). This is used to mapp the
+interface input fields and their respective values which have been entered.</li>
+<li>Add arbitrary many sortings either in ascending or desceinding order</li>
+<li>Detect query duplicates</li>
+<li>Create timestamps automatically for each insert and update.</li>
+<li>Full audit log.</li>
+</ul><p>You can initialize the QueryStore by using its API. The QueryStore uses Hibernate to persist the data.</p>
+
+<div class="highlight highlight-java"><pre>        <span class="c1">// Initialize Query Store</span>
+        <span class="n">QueryStoreAPI</span> <span class="n">queryAPI</span><span class="o">=</span> <span class="k">new</span> <span class="nf">QueryStoreAPI</span><span class="o">();</span>
+</pre></div>
+
+<p>The package Examples contains usage samples. Read the JavaDocs for more details.</p>
+
+<h2>
+<a name="persistent-identifaction-service" class="anchor" href="#persistent-identifaction-service"><span class="octicon octicon-link"></span></a>Persistent Identifaction Service</h2>
+
+<p>Identifying datasets is essential for future reuse. Storing exported datasets on a Web server and providing the URL
+for its retrieval is not enough. A simle change in the directory structure of the server renders a URL obsolete and
+the dataset can not be retrieved again. Hence a more sophisticated way of referencing datasets is needed. The concept
+ of <a href="http://en.wikipedia.org/wiki/Persistent_identifier">persistent identifiers (PID)</a> deals with this problem.
+ Several different PID systems <a href="http://metadaten-twr.org/2010/10/13/persistent-identifiers-an-overview/">exist</a> and
+ they all follow similar principles. A resolver service is introduced which can resolve an identifier to its URL. The
+  actual URL may change during the course of time, but the identifier remains always the same (it is persistent).
+  Thus whenever a digital object has to be moved to a different location (e.g.. server filesystem updates or similar
+  events), its location may be updated and the identifier can then refer to its new location.</p>
+
+<h3>
+<a name="persistent-identification-service-features" class="anchor" href="#persistent-identification-service-features"><span class="octicon octicon-link"></span></a>Persistent Identification Service Features</h3>
+
+<p>The Query store is implemented in Java and provides an API for the most common Tasks. It uses Hibernate to store the
+entities (details below). The following features are currently implemented in the API:</p>
+
+<ul>
+<li>Create PIDs of the form <em>prefix/identifier</em>.</li>
+<li>Create alphabetical identifiers of arbitrary length (e.g. zjqpU).</li>
+<li>Create alphanumeric identifiers of arbitrary length (YouTube style, eg. qsn4zPVRA7a0).</li>
+<li>Create numeric identifiers of arbitrary length (e.g. 08652).</li>
+<li>Store one URI with each identifier</li>
+<li>Update URIs (the identifier can neither be deleted nor updated via the API)</li>
+<li>Create organizations and prefixes (prefixes are unique).</li>
+<li>One organization can mit arbitrary many identifiers per prefix</li>
+<li>Identifiers are uniqie within one prefix and therefore the complete PID is unique.</li>
+<li>Resolve PIDs to URLs</li>
+<li>Retrieve latest PID pre organization</li>
+<li>Retrieve latest PID in the database.</li>
+<li>Print details</li>
+<li>Full audit log</li>
+</ul><p>You can initialize the QueryStore by using its API, refer to the examples for getting started. The QueryStore uses
+Hibernate to persist the data. Details below.</p>
+
+<div class="highlight highlight-java"><pre>       <span class="n">PersistentIdentifierAPI</span> <span class="n">api</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">PersistentIdentifierAPI</span><span class="o">();</span>
+
+
+              <span class="c1">// create a dummy organization and provide a prefix</span>
+              <span class="n">Organization</span> <span class="n">evilOrganization</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="na">createNewOrganitation</span><span class="o">(</span><span class="s">"Evil Corp"</span><span class="o">,</span><span class="mi">2345</span><span class="o">);</span>
+              <span class="n">Organization</span> <span class="n">goodOrganization</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="na">createNewOrganitation</span><span class="o">(</span><span class="s">"Good Company"</span><span class="o">,</span><span class="mi">6789</span><span class="o">);</span>
+              <span class="c1">// set the length for alphanumeric identifiers</span>
+              <span class="n">evilOrganization</span><span class="o">.</span><span class="na">setAlphanumericPIDlength</span><span class="o">(</span><span class="mi">20</span><span class="o">);</span>
+              <span class="n">goodOrganization</span><span class="o">.</span><span class="na">setAlphanumericPIDlength</span><span class="o">(</span><span class="mi">12</span><span class="o">);</span>
+
+              <span class="c1">// create identifiers</span>
+              <span class="n">api</span><span class="o">.</span><span class="na">getAlphaNumericPID</span><span class="o">(</span><span class="n">evilOrganization</span><span class="o">,</span> <span class="s">"www.repository.org/collections/datasets/ResearchData.csv"</span><span class="o">);</span>
+              <span class="n">api</span><span class="o">.</span><span class="na">getNumericPID</span><span class="o">(</span><span class="n">evilOrganization</span><span class="o">,</span> <span class="s">"www.repository.org/collections/datasets/QuerySet"</span><span class="o">);</span>
+              <span class="n">api</span><span class="o">.</span><span class="na">getAlphaPID</span><span class="o">(</span><span class="n">evilOrganization</span><span class="o">,</span> <span class="s">"www.repository.org/documentation/manual.pdf"</span><span class="o">);</span>
+</pre></div>
+
+<p>The package Examples contains usage samples. Read the JavaDocs for more details.</p>
+
+<h2>
+<a name="initializing-the-database" class="anchor" href="#initializing-the-database"><span class="octicon octicon-link"></span></a>Initializing the database</h2>
+
+<p>In order to use the modules you need to create a database scheme, create a user and add the corresponding permissions
+. This shows an example for MySQL. The permissions are not intended to be used in productive environments.</p>
+
+<div class="highlight highlight-sql"><pre>
+<span class="k">DROP</span> <span class="k">DATABASE</span> <span class="n">IF</span> <span class="k">EXISTS</span> <span class="o">`</span><span class="n">QueryStore</span><span class="o">`</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">DATABASE</span> <span class="o">`</span><span class="n">QueryStore</span><span class="o">`</span><span class="p">;</span>
+
+<span class="k">GRANT</span> <span class="k">ALL</span> <span class="k">PRIVILEGES</span> <span class="k">ON</span> <span class="n">QueryStore</span><span class="p">.</span><span class="o">*</span> <span class="k">To</span> <span class="s1">'QUERYSTOREUSER'</span><span class="o">@</span><span class="s1">'localhost'</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">'PASSWORD'</span><span class="p">;</span>
+<span class="n">FLUSH</span> <span class="k">PRIVILEGES</span><span class="p">;</span>
+
+</pre></div>
+
+<p>After you have set up and tested the database access, you need to enter the username,
+the password and the database into the Hibernate configuration files called hibernate.cfg.xml in thr folder resources
+ in each module.</p>
+
+<div class="highlight highlight-xml"><pre><span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"hibernate.connection.username"</span><span class="nt">&gt;</span>QUERYSTOREUSER<span class="nt">&lt;/property&gt;</span>
+<span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"hibernate.connection.password"</span><span class="nt">&gt;</span>PASSWORD<span class="nt">&lt;/property&gt;</span>
+<span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"hibernate.connection.url"</span><span class="nt">&gt;</span>jdbc:mysql://localhost:3306/QueryStore<span class="nt">&lt;/property&gt;</span>
+</pre></div>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Query Store and Persistent Identifier Prototype maintained by <a href="https://github.com/stefanproell">stefanproell</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
